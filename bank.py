@@ -34,8 +34,24 @@ class User:
             else:
                 print("You have borrowed twice and can't borrow anymore.")
 
-    def Send(self):
-        pass
+    def Send(self, amount, account_number, another_account, bank):
+        if account_number in bank.all_users_name and another_account in bank.all_users_name:
+            if 'ç' in account_number and 'c' in another_account:
+                if bank.current_account[account_number]["balance"] >= amount:
+                    bank.current_account[account_number]["balance"] -= amount
+                    bank.current_account[another_account]["balance"] += amount
+                else:
+                    print ("Send amount exceeded.")
+            elif 's' in account_number and 's' in another_account:
+                if bank.savings_account[account_number]["balance"] >= amount:
+                    bank.savings_account[account_number]["balance"] -= amount
+                    bank.savings_account[another_account]["balance"] += amount
+                else:
+                    print ("Send amount exceeded.")
+            else:
+                print("Send tk to same type of account only")
+        else:
+            print("Invalid bank account name.")
 
 
 class Bank:
