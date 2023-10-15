@@ -5,7 +5,7 @@ class User:
         self.my_account = {}
 
     def Create_account(self, name, email, address, account_type, bank):
-        bank.Create_account(name, email, address, account_type)
+        bank.Create_User_account(name, email, address, account_type)
 
     def Deposit(self, amount, account_number, bank):
         bank.Deposit(amount, account_number)
@@ -34,7 +34,7 @@ class User:
             else:
                 print("You have borrowed twice and can't borrow anymore.")
 
-    def Send(self, amount, account_number, another_account, bank):
+    def Transfer_amount(self, amount, account_number, another_account, bank):
         if account_number in bank.all_users_name and another_account in bank.all_users_name:
             if 'ç' in account_number and 'c' in another_account:
                 if bank.current_account[account_number]["balance"] >= amount:
@@ -62,8 +62,16 @@ class Bank:
         self.total_loan = 0
         self.Loan_off_on = True
         self.all_users_name = []
+        self.all_admin = {}
+    
+    def Create_admin_account(self, name, email, password):
+        self.all_admin[password] = {"name" : name, "email" : email, "password" : password}
+        print(f"Your account has been created.")
+    
+    def Change_admin_password(self, password, new_password):
+        pass
 
-    def Create_account(self, name, email, address, account_type):
+    def Create_User_account(self, name, email, address, account_type):
         if account_type.lower() == "savings":
             account_number = str(len(self.savings_account) + 100) + "s"
             self.savings_account[account_number] = {"name": name, "account_number": account_number, "email": email, "address": address, "account_type": account_type, "balance": 0, "transaction_history": []}
@@ -138,48 +146,202 @@ class Bank:
         except KeyError:
             print("Wrong account number")
 
-    def see_all_user(self):
+    def See_all_user(self):
         cc = 0
         for account in self.savings_account.values():
             print(f"{cc}. Account Name: {account['name']}, Account_number: {account['account_number']}, Account type: {account['account_type']}")
             cc += 1
 
-    def check_total_balance(self):
+    def Check_total_balance(self):
         print(f"Total Bank Balance: {self.bank_balance}")
 
-    def Total_loan(self):
+    def Check_Total_loan(self):
         print(self.total_loan)
 
     def Loan_off(self):
-        pass
+        self.Loan_off_on = True
+    
+    def Loan_on(self):
+        self.Loan_off_on = False
 
 
 bbl = Bank()
-siam = User()
-siam.Create_account("Siam", "siam@gmail.com", "Gaibandha", "savings", bbl)
-siam.Create_account("Siam", "siam@gmail.com", "Gaibandha", "current", bbl)
-siam.Deposit(5000, '100c', bbl)
-siam.Deposit(10000, '100s', bbl)
+user = User()
 
-siam.Withdraw(500, "100s", bbl)
-siam.Available_balance("100s", bbl)
-siam.Available_balance("100c", bbl)
+# siam.Create_account("Siam", "siam@gmail.com", "Gaibandha", "savings", bbl)
+# siam.Create_account("Siam", "siam@gmail.com", "Gaibandha", "current", bbl)
+# siam.Deposit(5000, '100c', bbl)
+# siam.Deposit(10000, '100s', bbl)
 
+# siam.Withdraw(500, "100s", bbl)
+# siam.Available_balance("100s", bbl)
+# siam.Available_balance("100c", bbl)
+bo = True
 
 while True:
-    print("\nMain Menu")
-    print("1. User")
-    print("2. Admin")
-    print("3. Exit")
+    print("""
+            1. Login
+            2. Create account.
+            3. Exit
+            """)
     choice = input("Enter your choice: ")
 
     if choice == '1':
-        acc_num = int(input("Enter your account number: "))
-        if acc_num in bank.accounts:
-            user_interface(bank.accounts[acc_num])
-        else:
-            print("Account does not exist")
+        print("""
+                1. User Login.
+                2. Admin Login.
+                3. Exit
+                """)
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            #user login
+            acc_num = input("Enter your account number: ")
+            if acc_num in bbl.all_users_name:
+                while bool:
+                    print("""
+                            1. Deposit.
+                            2. Withdraw.
+                            3. Check balance.
+                            4. Loan.
+                            5. Transfer amount.
+                            6. Exit.
+                            """)
+                    choice = input("Enter your choice: ")
+                    if choice == '1':
+                        #Deposit
+                        amount = int(input("Enter Deposit amount: "))
+                        user.Deposit(amount, acc_num, bbl)
+                        
+                    elif choice == '2':
+                        #Withdraw
+                        amount = int(input("Enter withdraw amount: "))
+                        user.Withdraw(amount, acc_num, bbl)
+                        
+                    elif choice == '3':
+                        #Check balance
+                        user.Available_balance(acc_num, bbl)
+                        
+                    elif choice == '4':
+                        #Loan
+                        name = input("Enter your bank account name: ")
+                        amount = int(input("Enter loan amount: "))
+                        user.Loan(amount, name, bbl)
+                        
+                    elif choice == '5':
+                        #Transfer
+                        another_account = input("Receiver account number: ")
+                        amount = int(input("Enter amount: "))
+                        user.Transfer_amount(amount, acc_num, another_account, bbl)
+                        
+                    elif choice == '6':
+                        bool = False
+                
+            else:
+                print("Account does not exist")
+                
+                
+        elif choice == '2':
+            #admin login
+            email = input("Enter your email: ")
+            pas11 = input("Enter your password: ")
+            if bbl.all_admin[pas11]['email'] == email:
+                while bool:
+                    print("""
+                            1. Delete user account.
+                            2. See all user account.
+                            3. Check total bank balance.
+                            4. Check total loan.
+                            5. Loan OFF.
+                            6. Loan ON.
+                            7. Exit.
+                            """)
+                    choice = input("Enter your choice: ")
+                    if choice == '1':
+                        #Delete user account
+                        account_user = input("User account number: ")
+                        bbl.Delete_user_account(account_user)
+                        
+                    elif choice == '2':
+                        #See all user account
+                        bbl.See_all_user()
+                        
+                    elif choice == '3':
+                        #Check total bank balance
+                        bbl.Check_total_balance()
+                        
+                    elif choice == '4':
+                        #Check total loan
+                        bbl.Check_Total_loan()
+                        
+                    elif choice == '5':
+                        #Loan OFF
+                        bbl.Loan_off()
+                        
+                    elif choice == '6':
+                        #Loan ON
+                        bbl.Loan_on()
+                        
+                    elif choice == '7':
+                        bool = False
+                
+            else:
+                print("Account does not exist")
+                break
+        elif choice == '3':
+            break
+
     elif choice == '2':
-        admin_interface()
+        #create account
+        print("""
+                1. Create User account.
+                2. Create Admin account.
+                3. Exit
+                """)
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            #Create User account
+            name = input("Enter your name: ")
+            email = input("Enter your email: ")
+            address = input("Enter your address: ")
+            account_type = input("Account Type (savings / current): ")
+            user.Create_account(name, email, address, account_type, bbl)
+            
+        elif choice == '2':
+            #Create Admin account
+            name = input("Enter your name: ")
+            email = input("Enter your email: ")
+            password = input("Password: ")
+            bbl.Create_admin_account(name, email, password)
+        elif choice == '3':
+            break
+
     elif choice == '3':
         break
+
+
+#  acc_num = int(input("Enter your account number: "))
+#         if acc_num in bbl.see_all_user:
+#             print("""
+#                     1. Deposit.
+#                     2. Withdraw.
+#                     3. Check balance.
+#                     4. Loan.
+#                     5. Transfer amount.
+#                     """)
+#         else:
+#             print("Account does not exist")
+
+
+# if choice == '1':
+                    
+#                 elif choice == '2':
+                    
+#                 elif choice == '3':
+                    
+#                 elif choice == '4':
+                    
+#                 elif choice == '5':
+                    
+#                 else:
+#                     break
