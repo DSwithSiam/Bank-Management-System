@@ -1,3 +1,6 @@
+from typing import Self
+
+
 class User:
     def __init__(self):
         self.loan_count = 0
@@ -25,8 +28,10 @@ class User:
         else:
             if self.loan_count <= 2:
                 if account_number in bank.all_acount_number:
-                    bank.total_loan += amount
                     self.total_loan += amount
+                    bank.bank_balance -= amount
+                    bank.total_loan += amount
+                    bank.Deposit(amount, account_number)
                     self.loan_count += 1
                     print(f"You got a loan of {amount} tk")
                 else:
@@ -35,25 +40,29 @@ class User:
                 print("You have borrowed twice and can't borrow anymore.")
 
     def Transfer_amount(self, amount, account_number, another_account, bank):
-        if account_number in bank.all_acount_number and another_account in bank.all_acount_number:
-            if 'c' in account_number and 'c' in another_account:
-                if bank.current_account[account_number]["balance"] >= amount:
-                    bank.current_account[account_number]["balance"] -= amount
-                    bank.current_account[another_account]["balance"] += amount
-                    print("Your transaction is complete.")
-                else:
-                    print ("Send amount exceeded.")
-            elif 's' in account_number and 's' in another_account:
-                if bank.savings_account[account_number]["balance"] >= amount:
-                    bank.savings_account[account_number]["balance"] -= amount
-                    bank.savings_account[another_account]["balance"] += amount
-                    print("Your transaction is complete.")
-                else:
-                    print ("Send amount exceeded.")
-            else:
-                print("Send tk to same type of account only")
+        if bank.bankrupt:
+            print("The bank has gone bankrupt.")
+            
         else:
-            print("Account does not exist.")
+            if account_number in bank.all_acount_number and another_account in bank.all_acount_number:
+                if 'c' in account_number and 'c' in another_account:
+                    if bank.current_account[account_number]["balance"] >= amount:
+                        bank.current_account[account_number]["balance"] -= amount
+                        bank.current_account[another_account]["balance"] += amount
+                        print("Your transaction is complete.")
+                    else:
+                        print ("Send amount exceeded.")
+                elif 's' in account_number and 's' in another_account:
+                    if bank.savings_account[account_number]["balance"] >= amount:
+                        bank.savings_account[account_number]["balance"] -= amount
+                        bank.savings_account[another_account]["balance"] += amount
+                        print("Your transaction is complete.")
+                    else:
+                        print ("Send amount exceeded.")
+                else:
+                    print("Send tk to same type of account only")
+            else:
+                print("Account does not exist.")
 
 
 class Bank:
@@ -66,6 +75,7 @@ class Bank:
         self.all_users_name = set()
         self.all_admin = {}
         self.all_acount_number = set()
+        self.bankrupt = False
     
     def Create_admin_account(self, name, email, password):
         self.all_admin[password] = {"name" : name, "email" : email, "password" : password}
@@ -73,7 +83,8 @@ class Bank:
     
     def Change_admin_password(self, password, new_password):
         pass
-
+        
+        
     def Create_User_account(self, name, email, address, account_type):
         if account_type.lower() == "savings":
             account_number = str(len(self.savings_account) + 100) + "s"
@@ -116,39 +127,43 @@ class Bank:
             self.bank_balance += amount
             self.current_account[account_number]["balance"] += amount
             self.current_account[account_number]["transaction_history"].append(f"Deposit: {amount} tk.")
-            print("Complete your deposit. Now your balance:", {self.current_account[account_number]["balance"]})
+            print("Now your balance:", {self.current_account[account_number]["balance"]})
             
         elif 's' in account_number and account_number in self.all_acount_number:
             self.bank_balance += amount
             self.savings_account[account_number]["balance"] += amount
             self.savings_account[account_number]["transaction_history"].append(f"Deposit: {amount} tk.")
-            print("Complete your deposit. Now your balance:", {self.savings_account[account_number]["balance"]})
+            print("Now your balance:", {self.savings_account[account_number]["balance"]})
             
         else:
             print("Wrong account number.")
 
     def Withdraw(self, amount, account_number):
-        if "c" in account_number and account_number in self.all_acount_number:
-            if self.current_account[account_number]["balance"] >= amount:
-                self.bank_balance -= amount
-                self.current_account[account_number]["balance"] -= amount
-                self.current_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
-                print("Complete your withdraw. Now your balance:", {self.current_account[account_number]["balance"]})
+        if self.bankrupt:
+            print("The bank has gone bankrupt.")
             
-            else:
-                print("Withdrawal amount exceeded")
-        elif 's' in account_number and account_number in self.all_acount_number:
-            if self.savings_account[account_number]["balance"] >= amount:
-                self.bank_balance -= amount
-                self.savings_account[account_number]["balance"] -= amount
-                self.savings_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
-                print("Complete your withdraw. Now your balance:", {self.savings_account[account_number]["balance"]})
-            
-            else:
-                print("Withdrawal amount exceeded")
         else:
-            print("Wrong account number")
-
+            if "c" in account_number and account_number in self.all_acount_number:
+                if self.current_account[account_number]["balance"] >= amount:
+                    self.bank_balance -= amount
+                    self.current_account[account_number]["balance"] -= amount
+                    self.current_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
+                    print("Complete your withdraw. Now your balance:", {self.current_account[account_number]["balance"]})
+                
+                else:
+                    print("Withdrawal amount exceeded")
+            elif 's' in account_number and account_number in self.all_acount_number:
+                if self.savings_account[account_number]["balance"] >= amount:
+                    self.bank_balance -= amount
+                    self.savings_account[account_number]["balance"] -= amount
+                    self.savings_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
+                    print("Complete your withdraw. Now your balance:", {self.savings_account[account_number]["balance"]})
+                
+                else:
+                    print("Withdrawal amount exceeded")
+            else:
+                print("Wrong account number")
+                
     def Available_balance(self, account_number):
         try:
             if "c" in account_number:
@@ -207,6 +222,14 @@ class Bank:
                 return False
         except:
             return False
+        
+    def is_bankrupt(self):
+        return self.bankrupt
+    
+    def bankrupt_active(self):
+        self.bankrupt = True
+    
+            
 
 #------------------------------------------------------------------------------------------------->
 #------------------------------------------------------------------------------------------------->
@@ -253,7 +276,9 @@ while True:
                     if choice == '1':
                         #Deposit
                         amount = int(input("Enter Deposit amount: "))
+                        print("Complete your deposit.")
                         user.Deposit(amount, acc_num, bbl)
+                        
                         
                     elif choice == '2':
                         #Withdraw
