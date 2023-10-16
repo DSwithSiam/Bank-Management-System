@@ -1,5 +1,3 @@
-from typing import Self
-
 
 class User:
     def __init__(self):
