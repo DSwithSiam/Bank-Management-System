@@ -23,7 +23,7 @@ class User:
         if not bank.Loan_off_on:
             print("Loan OFF")
         else:
-            if self.total_loan < 2:
+            if self.total_loan <= 2:
                 if account_number in bank.all_acount_number:
                     bank.total_loan += amount
                     self.total_loan += amount
@@ -36,7 +36,7 @@ class User:
 
     def Transfer_amount(self, amount, account_number, another_account, bank):
         if account_number in bank.all_acount_number and another_account in bank.all_acount_number:
-            if 'ç' in account_number and 'c' in another_account:
+            if 'c' in account_number and 'c' in another_account:
                 if bank.current_account[account_number]["balance"] >= amount:
                     bank.current_account[account_number]["balance"] -= amount
                     bank.current_account[another_account]["balance"] += amount
@@ -63,9 +63,9 @@ class Bank:
         self.bank_balance = 0
         self.total_loan = 0
         self.Loan_off_on = True
-        self.all_users_name = []
+        self.all_users_name = set()
         self.all_admin = {}
-        self.all_acount_number = []
+        self.all_acount_number = set()
     
     def Create_admin_account(self, name, email, password):
         self.all_admin[password] = {"name" : name, "email" : email, "password" : password}
@@ -78,79 +78,79 @@ class Bank:
         if account_type.lower() == "savings":
             account_number = str(len(self.savings_account) + 100) + "s"
             self.savings_account[account_number] = {"name": name, "account_number": account_number, "email": email, "address": address, "account_type": account_type, "balance": 0, "transaction_history": []}
-            self.all_users_name.append(name)
-            self.all_acount_number.append(account_number)
+            self.all_users_name.add(name)
+            self.all_acount_number.add(account_number)
             print(f"Your bank account number is: {account_number}")
         
         else:
             account_number = str(len(self.current_account) + 100) + "c"
             self.current_account[account_number] = {"name": name, "account_number": account_number, "email": email, "address": address, "account_type": account_type, "balance": 0, "transaction_history": []}
-            self.all_users_name.append(name)
-            self.all_acount_number.append(account_number)
+            self.all_users_name.add(name)
+            self.all_acount_number.add(account_number)
             print(f"Your bank account number is: {account_number}")
 
     def Delete_user_account(self, account_number):
-        try:
-            if "c" in account_number:
-                self.current_account.pop(account_number)
+        
+            if 'c' in account_number and account_number in self.all_acount_number:
+                a = self.current_account.pop(account_number)
                 self.all_users_name.remove(self.current_account[account_number]["name"])
                 self.all_acount_number.remove(account_number)
-                print(f"Your bank account has been deleted.")
+                print(f"Your bank account {a} has been deleted.")
+            
+            elif 's' in account_number and account_number in self.all_acount_number:
+                a = self.savings_account.pop(account_number)
+                self.all_users_name.remove(self.savings_account[account_number]["name"])
+                self.all_acount_number.remove(account_number)
+                print(f"Your bank account {a} has been deleted.")
             
             else:
-                self.savings_account.pop(account_number)
-                self.all_users_name.remove(self.savings_account[account_number]["name"])
-                print(f"Your bank account has been deleted.")
-                self.all_acount_number.remove(account_number)
-        except KeyError:
-            print("Wrong account number.")
+                print("Wrong account number.")
 
     def Deposit(self, amount, account_number):
-        try:
-            if "c" in account_number:
-                self.bank_balance += amount
-                self.current_account[account_number]["balance"] += amount
-                self.current_account[account_number]["transaction_history"].append(f"Deposit: {amount} tk.")
-                print("Complete your deposit. Now your balance:", {self.current_account[account_number]["balance"]})
-                
-            else:
-                self.bank_balance += amount
-                self.savings_account[account_number]["balance"] += amount
-                self.savings_account[account_number]["transaction_history"].append(f"Deposit: {amount} tk.")
-                print("Complete your deposit. Now your balance:", {self.savings_account[account_number]["balance"]})
-                
-        except KeyError:
+        
+        if "c" in account_number and account_number in self.all_acount_number:
+            self.bank_balance += amount
+            self.current_account[account_number]["balance"] += amount
+            self.current_account[account_number]["transaction_history"].append(f"Deposit: {amount} tk.")
+            print("Complete your deposit. Now your balance:", {self.current_account[account_number]["balance"]})
+            
+        elif 's' in account_number and account_number in self.all_acount_number:
+            self.bank_balance += amount
+            self.savings_account[account_number]["balance"] += amount
+            self.savings_account[account_number]["transaction_history"].append(f"Deposit: {amount} tk.")
+            print("Complete your deposit. Now your balance:", {self.savings_account[account_number]["balance"]})
+            
+        else:
             print("Wrong account number.")
 
     def Withdraw(self, amount, account_number):
-        try:
-            if "c" in account_number:
-                if self.current_account[account_number]["balance"] >= amount:
-                    self.bank_balance -= amount
-                    self.current_account[account_number]["balance"] -= amount
-                    self.current_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
-                    print("Complete your withdraw. Now your balance:", {self.current_account[account_number]["balance"]})
-                
-                else:
-                    print("Withdrawal amount exceeded")
+        if "c" in account_number and account_number in self.all_acount_number:
+            if self.current_account[account_number]["balance"] >= amount:
+                self.bank_balance -= amount
+                self.current_account[account_number]["balance"] -= amount
+                self.current_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
+                print("Complete your withdraw. Now your balance:", {self.current_account[account_number]["balance"]})
+            
             else:
-                if self.savings_account[account_number]["balance"] >= amount:
-                    self.bank_balance -= amount
-                    self.savings_account[account_number]["balance"] -= amount
-                    self.savings_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
-                    print("Complete your withdraw. Now your balance:", {self.savings_account[account_number]["balance"]})
-                
-                else:
-                    print("Withdrawal amount exceeded")
-        except KeyError:
+                print("Withdrawal amount exceeded")
+        elif 's' in account_number and account_number in self.all_acount_number:
+            if self.savings_account[account_number]["balance"] >= amount:
+                self.bank_balance -= amount
+                self.savings_account[account_number]["balance"] -= amount
+                self.savings_account[account_number]["transaction_history"].append(f"Withdraw: {amount} tk.")
+                print("Complete your withdraw. Now your balance:", {self.savings_account[account_number]["balance"]})
+            
+            else:
+                print("Withdrawal amount exceeded")
+        else:
             print("Wrong account number")
 
     def Available_balance(self, account_number):
         try:
             if "c" in account_number:
-                print(self.current_account[account_number]["balance"])
+                print("Your Balance", self.current_account[account_number]["balance"])
             else:
-                print(self.savings_account[account_number]["balance"])
+                print("Your Balance", self.savings_account[account_number]["balance"])
         except KeyError:
             print("Wrong account number")
 
@@ -168,6 +168,9 @@ class Bank:
         for account in self.savings_account.values():
             print(f"{cc}. Account Name: {account['name']}, Account_number: {account['account_number']}, Account type: {account['account_type']}")
             cc += 1
+        for account in self.current_account.values():
+            print(f"{cc}. Account Name: {account['name']}, Account_number: {account['account_number']}, Account type: {account['account_type']}")
+            cc += 1
 
     def Check_total_balance(self):
         print(f"Total Bank Balance: {self.bank_balance}")
@@ -177,10 +180,12 @@ class Bank:
 
     def Loan_off(self):
         self.Loan_off_on = True
+        print("Loan OFF")
         
     
     def Loan_on(self):
         self.Loan_off_on = False
+        print("Loan ON")
         
     def Check_user_account(self, account_number):
         try:
@@ -226,16 +231,19 @@ while True:
         if choice == '1':
             #user login
             acc_num = input("Enter your account number: ")
-            while bool:
-                if bbl.Check_user_account(acc_num):
+            if bbl.Check_user_account(acc_num):
+                print("Login Successful.")
+
+                while bool:
                     print("""
                             1. Deposit.
                             2. Withdraw.
                             3. Check balance.
                             4. Loan.
                             5. Transfer amount.
-                            6. Back.
-                            7. Exit.
+                            6. Transaction history.
+                            7. Back.
+                            8. Exit.
                             """)
                     choice = input("Enter your choice: ")
                     if choice == '1':
@@ -266,21 +274,25 @@ while True:
                         user.Transfer_amount(amount, your_account, another_account, bbl)
                         
                     elif choice == '6':
+                        #Transaction_history
+                        user.Transaction_history(acc_num, bbl)
+                        
+                    elif choice == '7':
                         bool = False
                     
-                    elif choice == '7':
+                    elif choice == '8':
                         break
                 
-                else:
-                    print("Account does not exist")
-                    bool = False
-                
+            else:
+                print("Account does not exist")
+            
         elif choice == '2':
             #admin login
             email = input("Enter your email: ")
             pas11 = input("Enter your password: ")
-            while bool:
-                if bbl.Check_admin_account(pas11, email):
+            if bbl.Check_admin_account(pas11, email):
+                print("Login Successful.")
+                while bool:
                     print("""
                             1. Delete user account.
                             2. See all user account.
@@ -323,9 +335,8 @@ while True:
                     elif choice == '8':
                         break
                 
-                else:
-                    print("Account does not exist")
-                    bool = False
+            else:
+                print("Account does not exist")
                     
         elif choice == '3':
             continue
