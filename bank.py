@@ -23,7 +23,7 @@ class User:
         if not bank.Loan_off_on:
             print("Loan OFF")
         else:
-            if self.total_loan <= 2:
+            if self.loan_count <= 2:
                 if account_number in bank.all_acount_number:
                     bank.total_loan += amount
                     self.total_loan += amount
@@ -92,15 +92,19 @@ class Bank:
     def Delete_user_account(self, account_number):
         
             if 'c' in account_number and account_number in self.all_acount_number:
-                a = self.current_account.pop(account_number)
-                self.all_users_name.remove(self.current_account[account_number]["name"])
+                
+                name = self.current_account[account_number]["name"]
+                self.all_users_name.remove(name)
                 self.all_acount_number.remove(account_number)
+                a = self.current_account.pop(account_number)
                 print(f"Your bank account {a} has been deleted.")
             
             elif 's' in account_number and account_number in self.all_acount_number:
-                a = self.savings_account.pop(account_number)
-                self.all_users_name.remove(self.savings_account[account_number]["name"])
+                
+                name = self.savings_account[account_number]["name"]
+                self.all_users_name.remove(name)
                 self.all_acount_number.remove(account_number)
+                a = self.savings_account.pop(account_number)
                 print(f"Your bank account {a} has been deleted.")
             
             else:
@@ -179,12 +183,12 @@ class Bank:
         print(f"Total loan: {self.total_loan}")
 
     def Loan_off(self):
-        self.Loan_off_on = True
+        self.Loan_off_on = False
         print("Loan OFF")
         
     
     def Loan_on(self):
-        self.Loan_off_on = False
+        self.Loan_off_on = True
         print("Loan ON")
         
     def Check_user_account(self, account_number):
