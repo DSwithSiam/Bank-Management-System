@@ -53,7 +53,7 @@ class User:
             else:
                 print("Send tk to same type of account only")
         else:
-            print("Invalid bank account name.")
+            print("Account does not exist.")
 
 
 class Bank:
@@ -266,9 +266,9 @@ while True:
                         
                     elif choice == '4':
                         #Loan
-                        name = input("Enter your bank account name: ")
+                        number = input("Enter your bank account number: ")
                         amount = int(input("Enter loan amount: "))
-                        user.Loan(amount, name, bbl)
+                        user.Loan(amount, number, bbl)
                         
                     elif choice == '5':
                         #Transfer
